@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>AI Mindmap Kiosk Exhibit</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- SVG Viewport Canvas -->
+      <svg id="mindmap-svg">
+        <g id="world">
+          <g id="layer-links"></g>
+          <g id="layer-nodes"></g>
+        </g>
+      </svg>
+
+      <!-- Floating UI Controls Bar (Reset View, Clear All, Zoom) -->
+      <div class="ui-controls-bar">
+        <button id="btn-reset-view" class="ui-btn" title="Reset View">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          <span>Reset View</span>
+        </button>
+
+        <button id="btn-clear-all" class="ui-btn" title="Collapse All Nodes">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          <span>Clear All</span>
+        </button>
+
+        <div class="zoom-controls">
+          <button id="btn-zoom-in" class="ui-btn icon-only" title="Zoom In">
+            +
+          </button>
+          <button id="btn-zoom-out" class="ui-btn icon-only" title="Zoom Out">
+            −
+          </button>
+        </div>
+      </div>
+
+      <!-- Layer 1: Aspect Progress Counters Bar -->
+      <div id="aspect-progress-bar"></div>
+
+      <!-- Part 2: Dynamic Hint Overlay Layer -->
+      <div id="hint-layer"></div>
+
+      <!-- Part 3: Richer Detail Side Panel -->
+      <aside id="detail-panel" class="side-panel hidden">
+        <button
+          id="btn-close-panel"
+          class="panel-close-btn"
+          aria-label="Close panel"
+        >
+          &times;
+        </button>
+
+        <!-- Core Title & Overview -->
+        <h2 id="panel-title">Node Title</h2>
+        <p id="panel-desc">Node description will appear here.</p>
+
+        <!-- How It Works: 3-step strip -->
+        <div id="panel-how" class="hidden">
+          <div class="panel-section-title">How It Works</div>
+          <div id="panel-how-steps" class="step-strip"></div>
+        </div>
+
+        <!-- Everyday Examples: Seen In Chips -->
+        <div id="panel-seen" class="hidden">
+          <div class="panel-section-title">You've Seen It In</div>
+          <div id="panel-seen-chips" class="chip-container"></div>
+        </div>
+
+        <!-- Surprising Fact / Did You Know? -->
+        <div id="panel-fact" class="hidden">
+          <div class="panel-section-title">Did You Know?</div>
+          <p
+            id="panel-fact-text"
+            style="
+              font-size: 13px;
+              color: #cbd5e1;
+              font-style: italic;
+              line-height: 1.4;
+            "
+          ></p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Data & Core Libraries -->
+    <script src="js/data.js"></script>
+
+    <!-- Mindmap Engines -->
+    <script src="js/layout.js"></script>
+    <script src="js/viewport.js"></script>
+    <script src="js/panel.js"></script>
+    <script src="js/render.js"></script>
+
+    <!-- Gamification & Touch Hint Cues (Part 1 & Part 2) -->
+    <script src="js/hints.js"></script>
+    <script src="js/missions.js"></script>
+
+    <!-- Application Entry Point -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

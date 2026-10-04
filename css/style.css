@@ -1,0 +1,475 @@
+/* ==========================================================================
+   AI Mindmap Base & Kiosk Layout Styles
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #0b0f19;
+  color: #f8fafc;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+#mindmap-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+}
+
+#mindmap-svg:active {
+  cursor: grabbing;
+}
+
+/* ==========================================================================
+   Mindmap Nodes & Branch Styling
+   ========================================================================== */
+
+.mm-node {
+  opacity: 0.55;
+  transition: opacity 0.4s ease, filter 0.4s ease, transform 0.3s ease;
+  cursor: pointer;
+}
+
+.mm-node.visited, 
+.mm-node.expanded, 
+.mm-node.branch-root {
+  opacity: 1;
+}
+
+.mm-node.visited .mm-node-rect {
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.mm-node-rect {
+  rx: 12px;
+  ry: 12px;
+  fill: #1e293b;
+  stroke-width: 2px;
+  transition: stroke 0.3s ease, fill 0.3s ease, stroke-width 0.3s ease;
+}
+
+.mm-label {
+  fill: #f8fafc;
+  font-size: 14px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+/* Branch specific colors */
+.branch-tech .mm-node-rect { stroke: #ef4444; }
+.branch-tech .mm-label { color: #ef4444; }
+
+.branch-cap .mm-node-rect, 
+.branch-caps .mm-node-rect { stroke: #3b82f6; }
+
+.branch-app .mm-node-rect, 
+.branch-apps .mm-node-rect { stroke: #f59e0b; }
+
+.branch-root .mm-node-rect {
+  fill: #0f172a;
+  stroke: #6366f1;
+  stroke-width: 3px;
+}
+
+/* ==========================================================================
+   Wire Lighting Effects
+   ========================================================================== */
+
+.wire-glow {
+  fill: none;
+  opacity: 0.25;
+  transition: opacity 0.5s ease;
+}
+
+.wire-glow.lit {
+  opacity: 0.95;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+.wire-strand {
+  fill: none;
+  opacity: 0.8;
+}
+
+/* ==========================================================================
+   Aspect Progress Counters Bar
+   ========================================================================== */
+
+#aspect-progress-bar {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.progress-badge {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.progress-badge .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.progress-badge.tech .dot { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+.progress-badge.caps .dot { background: #3b82f6; box-shadow: 0 0 6px #3b82f6; }
+.progress-badge.apps .dot { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+
+/* ==========================================================================
+   Animated Cues & Gestures
+   ========================================================================== */
+
+.mm-node.can-expand:not(.expanded):not(.visited) .mm-node-rect {
+  animation: mm-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes mm-breathe {
+  0%, 100% { stroke-opacity: .5; stroke-width: 1.5; }
+  50%      { stroke-opacity: 1;  stroke-width: 3; }
+}
+
+.mm-badge circle { 
+  fill: #0f172a; 
+  stroke: currentColor; 
+  stroke-width: 1.5; 
+}
+
+.mm-badge text {
+  fill: currentColor;
+  font-size: 13px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+.branch-tech .mm-badge { color: #ef4444; }
+.branch-cap .mm-badge, .branch-caps .mm-badge { color: #3b82f6; }
+.branch-app .mm-badge, .branch-apps .mm-badge { color: #f59e0b; }
+
+/* Dynamic Hint Overlay Layer */
+#hint-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+
+#hint-layer.on { 
+  opacity: 1; 
+}
+
+.hint-tap { 
+  position: absolute; 
+  width: 0; 
+  height: 0; 
+}
+
+.hint-tap .dot {
+  position: absolute; 
+  width: 22px; 
+  height: 22px; 
+  margin: -11px 0 0 -11px;
+  border-radius: 50%; 
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+  animation: hint-press 1.8s ease-in-out infinite;
+}
+
+.hint-tap .ripple {
+  position: absolute; 
+  width: 20px; 
+  height: 20px; 
+  margin: -10px 0 0 -10px;
+  border-radius: 50%; 
+  border: 2px solid #fff;
+  animation: hint-ripple 1.8s ease-out infinite;
+}
+
+.hint-tap .r2 { 
+  animation-delay: .35s; 
+}
+
+.hint-tap .lbl, 
+.hint-pinch span {
+  color: #fff; 
+  font: 600 14px system-ui, -apple-system, sans-serif;
+  text-shadow: 0 1px 4px #000; 
+  white-space: nowrap;
+}
+
+.hint-tap .lbl { 
+  position: absolute; 
+  top: 34px; 
+  left: 0; 
+  transform: translateX(-50%); 
+}
+
+@keyframes hint-ripple { 
+  0% { transform: scale(.5); opacity: .9; } 
+  100% { transform: scale(4); opacity: 0; } 
+}
+
+@keyframes hint-press { 
+  0%, 100% { transform: scale(1); } 
+  30% { transform: scale(.7); } 
+}
+
+.hint-pinch {
+  position: absolute; 
+  left: 50%; 
+  bottom: 48px; 
+  width: 120px; 
+  height: 90px;
+  transform: translateX(-50%);
+}
+
+.hint-pinch .f {
+  position: absolute; 
+  top: 20px; 
+  left: 49px; 
+  width: 22px; 
+  height: 22px;
+  border-radius: 50%; 
+  background: rgba(255,255,255,.85);
+  box-shadow: 0 0 8px rgba(255,255,255,0.6);
+}
+
+.hint-pinch .f1 { animation: pinch-l 2.2s ease-in-out infinite; }
+.hint-pinch .f2 { animation: pinch-r 2.2s ease-in-out infinite; }
+.hint-pinch span { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); }
+
+@keyframes pinch-l { 0%, 100% { transform: translateX(-14px); } 50% { transform: translateX(-42px); } }
+@keyframes pinch-r { 0%, 100% { transform: translateX(14px); }  50% { transform: translateX(42px); } }
+
+/* ==========================================================================
+   Side Panel & Modals Layout
+   ========================================================================== */
+
+.side-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 90vw;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
+}
+
+.side-panel.hidden {
+  transform: translateX(100%);
+}
+
+.panel-close-btn {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.panel-close-btn:hover {
+  color: #fff;
+}
+
+.panel-section-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.step-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 3px solid #3b82f6;
+}
+
+.step-num {
+  font-weight: 700;
+  color: #60a5fa;
+  font-size: 13px;
+}
+
+.step-text {
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.4;
+}
+
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-pill {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.quiz-modal, .mission-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 15, 25, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.quiz-card {
+  background: #1e293b;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  color: #fff;
+}
+
+.quiz-card h3 { 
+  font-size: 20px; 
+  margin-bottom: 8px; 
+  color: #f8fafc; 
+}
+
+.quiz-card p { 
+  font-size: 14px; 
+  color: #94a3b8; 
+  margin-bottom: 20px; 
+}
+
+.quiz-btns { 
+  display: flex; 
+  gap: 10px; 
+  justify-content: center; 
+}
+
+.quiz-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  background: #334155;
+  color: #f8fafc;
+  transition: background 0.2s;
+}
+
+.quiz-btn:hover { background: #475569; }
+.quiz-btn.primary { background: #2563eb; }
+.quiz-btn.primary:hover { background: #1d4ed8; }
+
+.hidden {
+  display: none !important;
+}
+.ui-controls-bar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.ui-btn:hover {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.ui-btn.icon-only {
+  padding: 8px 12px;
+}
+
+.zoom-controls {
+  display: flex;
+  gap: 4px;
+}
